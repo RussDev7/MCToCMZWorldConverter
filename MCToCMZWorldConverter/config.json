@@ -1,0 +1,231 @@
+{
+    // ---------------------------------------------------------------------------
+    // MCToCMZWorldConverter configuration
+    // ---------------------------------------------------------------------------
+    // This is JSON-with-comments. The converter supports comments and trailing commas.
+    //
+    // Main flow:
+    // 1. Read rendered Minecraft Java Anvil chunks from InputMinecraftWorld.
+    // 2. Convert Minecraft block states through block-map.json.
+    // 3. Create a CastleMiner Z world folder under OutputCmzWorldFolder.
+    // 4. Write CMZ world.info and native CMZ chunk .dat files.
+    // ---------------------------------------------------------------------------
+
+    // ---------------------------------------------------------------------------
+    // Input / Output
+    // ---------------------------------------------------------------------------
+
+    // Minecraft Java save folder to convert.
+    "InputMinecraftWorld": "C:/Users/John/AppData/Roaming/.minecraft/saves/CMZ-WORLD-TEST",
+
+    // CastleMiner Z output folder.
+    //
+    // When Cmz.OutputPathIsCastleMinerZSaveRoot=false:
+    //   This must point directly to CMZ's actual Worlds folder.
+    //
+    // When Cmz.OutputPathIsCastleMinerZSaveRoot=true:
+    //   This should point to the CastleMiner Z save root, and the converter appends /Worlds.
+    //
+    // The converter creates:
+    //   OutputCmzWorldFolder/<random-guid>/world.info
+    //   OutputCmzWorldFolder/<random-guid>/X...Y-64Z....dat
+    "OutputCmzWorldFolder": "C:/Users/John/Documents/CastleMinerZ/Worlds",
+
+    // Minecraft block-state to CastleMiner Z block-type map.
+    "BlockMap": "block-map.json",
+
+    // ---------------------------------------------------------------------------
+    // Minecraft read settings
+    // ---------------------------------------------------------------------------
+
+    "Minecraft": {
+        // true  = convert every rendered chunk found in the selected region folder.
+        // false = only convert the Min/MaxChunkX/Z bounds below.
+        "ConvertAllRenderedChunks": true,
+
+        // Debug/test bounds.
+        // These are only used when ConvertAllRenderedChunks=false.
+        "MinChunkX": -1,
+        "MaxChunkX": 1,
+        "MinChunkZ": -1,
+        "MaxChunkZ": 1,
+
+        // Vertical slice mapping.
+        //
+        // This says:
+        //   Minecraft Y 60 becomes CMZ Y -64.
+        //
+        // CMZ chunks only store Y -64..63, so this imports:
+        //   Minecraft Y 60..187 -> CMZ Y -64..63
+        //
+        // Formula:
+        //   CMZ_Y = Minecraft_Y + (CmzY - MinecraftY)
+        "VerticalMapping": {
+            "MinecraftY": 60,
+            "CmzY": -64
+        },
+
+        // Legacy alternative.
+        // Still supported if VerticalMapping is removed.
+        //
+        // Equivalent for Minecraft Y 60 -> CMZ Y -64:
+        // "CenterY": 124,
+
+        // Dimension to convert.
+        //
+        // Common values:
+        //   minecraft:overworld
+        //   minecraft:the_nether
+        //   minecraft:the_end
+        //
+        // Custom datapack dimensions can use namespace:path.
+        "Dimension": "minecraft:overworld",
+
+        // true = prefer modern dimension paths such as:
+        //   dimensions/minecraft/overworld/region
+        //
+        // false = prefer legacy root paths such as:
+        //   region
+        "PreferModernDimensionPath": true,
+
+        // true = skip unreadable/corrupt/unsupported chunks and continue conversion.
+        // false = stop conversion on the first unreadable chunk.
+        "SkipUnreadableChunks": true,
+
+        // Leave blank for auto-detect.
+        //
+        // Modern datapack/custom-dimension overworld example:
+        //   "RegionFolder": "dimensions/minecraft/overworld/region"
+        //
+        // Legacy vanilla overworld example:
+        //   "RegionFolder": "region"
+        "RegionFolder": ""
+    },
+
+    // ---------------------------------------------------------------------------
+    // Placement settings
+    // ---------------------------------------------------------------------------
+
+    "Placement": {
+        // Horizontal world-space offset applied to every converted block.
+        //
+        // Note:
+        // StreamingChunkWrites=true requires both offsets to be multiples of 16.
+        "OffsetX": 0,
+        "OffsetZ": 0
+    },
+
+    // ---------------------------------------------------------------------------
+    // Air handling
+    // ---------------------------------------------------------------------------
+
+    "AirHandling": {
+        // true  = write Empty blocks into CMZ chunks. Best for full-world replacement.
+        // false = skip Empty blocks. Useful for overlay/paste-style tests.
+        "WriteAir": true
+    },
+
+    // ---------------------------------------------------------------------------
+    // CastleMiner Z output settings
+    // ---------------------------------------------------------------------------
+
+    "Cmz": {
+        // true  = create a new random UUID world folder.
+        // false = write directly into OutputCmzWorldFolder.
+        "CreateWorldFolderWithRandomUuid": true,
+
+        // Output path interpretation.
+        //
+        // false = OutputCmzWorldFolder is already the actual Worlds folder.
+        // true  = OutputCmzWorldFolder is the CastleMiner Z save root and the converter appends /Worlds.
+        "OutputPathIsCastleMinerZSaveRoot": false,
+
+        // Safety check so you do not accidentally export to Desktop and wonder why CMZ cannot see it.
+        "RequireOutputFolderNamedWorlds": true,
+
+        // Writes mc-to-cmz-world.info-check.txt beside world.info.
+        "WriteWorldInfoDebugReport": true,
+
+        // SaveDevice key settings.
+        //
+        // Steam CMZ saves use a key based on your SteamID folder name:
+        //   MD5(SteamID + "CMZ778")
+        //
+        // For a path like:
+        //   AppData/Local/CastleMinerZ/76561198296842857/Worlds
+        //
+        // leave InferSaveDeviceSteamIdFromOutputPath=true.
+        "InferSaveDeviceSteamIdFromOutputPath": true,
+
+        // Optional explicit numeric SteamID.
+        // Leave blank to infer from the Worlds folder parent.
+        "SaveDeviceSteamId": "",
+
+        // Last-resort fallback for old/non-Steam saves only.
+        // Steam users should leave this false.
+        "UseCommonSaveDeviceKey": false,
+
+        // -------------------------------------------------------------------------
+        // world.info metadata
+        // -------------------------------------------------------------------------
+
+        "WorldName": "Converted Minecraft World",
+
+        // Best result: set OwnerGamerTag to your exact CMZ/Steam display name.
+        // Leaving this blank uses your Windows username.
+        "OwnerGamerTag": "",
+        "CreatorGamerTag": "",
+
+        "ServerMessage": "Converted Minecraft World",
+        "ServerPassword": "",
+
+        // true  = generated world is Creative/Infinite Resources.
+        // false = generated world is normal Survival.
+        //
+        // Note:
+        // Creative mode can list both creative and survival worlds.
+        // Survival mode lists only non-creative worlds.
+        "InfiniteResourceMode": true,
+
+        // Seed settings.
+        //
+        // true  = ignore Seed and write a random seed.
+        // false = use the Seed value below.
+        "RandomSeed": true,
+        "Seed": 0,
+
+        // WorldInfo version 5 fields.
+        // Stock new worlds usually start at 0/0.
+        "HellBossesSpawned": 0,
+        "MaxHellBossSpawns": 0,
+
+        // Default CMZ last-position/spawn-style coordinates.
+        "LastPositionX": 8.0,
+        "LastPositionY": 128.0,
+        "LastPositionZ": -8.0,
+
+        // -------------------------------------------------------------------------
+        // Chunk output behavior
+        // -------------------------------------------------------------------------
+
+        // Deletes old generated chunk files from the selected output world folder first.
+        "ClearExistingChunkFiles": true,
+
+        // Forces CMZ Y=-64 to bedrock.
+        "KeepFloorBedrock": true,
+
+        // Strongly recommended for whole-world conversion, especially with WriteAir=true.
+        // Saves and clears chunks during conversion instead of keeping the entire output world in RAM.
+        "StreamingChunkWrites": true,
+
+        // Stock CMZ loads chunk .dat files through SaveDevice.Load(...).
+        // Leave true so generated chunk files are RTSD-wrapped like native CMZ saves.
+        "WrapChunkFilesWithSaveDevice": true,
+
+        // If true, unmapped Minecraft blocks use DefaultUnmappedBlock instead of the block map default.
+        "OverrideUnmappedBlocks": false,
+
+        // Default CMZ block used by OverrideUnmappedBlocks.
+        "DefaultUnmappedBlock": "Empty"
+    }
+}

@@ -109,16 +109,22 @@ namespace MCToCMZWorldConverter
                 }
                 Console.WriteLine("MC region folder:         " + minecraftWorld.RegionFolder);
                 Console.WriteLine("Region files:             " + minecraftWorld.RegionFileCount);
+                Console.WriteLine("Skipped region files:     " + minecraftWorld.SkippedRegionFileCount);
                 Console.WriteLine("Block map:                " + config.BlockMap);
                 Console.WriteLine("Chunks queued:            " + chunks.Count);
-                Console.WriteLine($"Y slice:                 MC {mcMinY}..{mcMaxY} -> CMZ -64..63");
-                Console.WriteLine($"Y mapping:               MC Y {config.Minecraft.MappingSourceMinecraftY} -> CMZ Y {config.Minecraft.MappingTargetCmzY}" + (config.Minecraft.UsedLegacyCenterY ? " (legacy CenterY)" : ""));
+                Console.WriteLine($"Y slice:                  MC {mcMinY}..{mcMaxY} -> CMZ -64..63");
+                Console.WriteLine($"Y mapping:                MC Y {config.Minecraft.MappingSourceMinecraftY} -> CMZ Y {config.Minecraft.MappingTargetCmzY}" + (config.Minecraft.UsedLegacyCenterY ? " (legacy CenterY)" : ""));
                 Console.WriteLine("Write air:                " + config.AirHandling.WriteAir);
                 Console.WriteLine("Keep bedrock:             " + config.Cmz.KeepFloorBedrock);
                 Console.WriteLine("Skip read errors:         " + config.Minecraft.SkipUnreadableChunks);
                 Console.WriteLine("Streaming writes:         " + config.Cmz.StreamingChunkWrites);
                 Console.WriteLine("Wrap chunks RTSD:         " + config.Cmz.WrapChunkFilesWithSaveDevice);
                 Console.WriteLine();
+
+                foreach (string warning in minecraftWorld.SkippedRegionFiles)
+                    Console.WriteLine("WARNING: " + warning);
+                if (minecraftWorld.SkippedRegionFileCount > 0)
+                    Console.WriteLine();
 
                 #endregion
 

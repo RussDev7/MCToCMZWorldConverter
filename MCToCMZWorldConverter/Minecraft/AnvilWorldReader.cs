@@ -35,6 +35,7 @@ namespace MCToCMZWorldConverter.Minecraft
         private readonly string _worldFolder;
         private readonly string _regionFolder;
         private readonly Dictionary<RegionKey, RegionFileInfo> _regions = new Dictionary<RegionKey, RegionFileInfo>();
+        private readonly List<string> _skippedRegionFiles = new List<string>();
 
         #endregion
 
@@ -54,6 +55,17 @@ namespace MCToCMZWorldConverter.Minecraft
         /// Number of discovered <c>.mca</c> region files in <see cref="RegionFolder" />.
         /// </summary>
         public int RegionFileCount => _regions.Count;
+
+        /// <summary>
+        /// Number of discovered region files that were ignored because they cannot contain
+        /// a valid Anvil header.
+        /// </summary>
+        public int SkippedRegionFileCount => _skippedRegionFiles.Count;
+
+        /// <summary>
+        /// Human-readable warnings for ignored region files.
+        /// </summary>
+        public IEnumerable<string> SkippedRegionFiles => _skippedRegionFiles;
 
         #endregion
 
@@ -167,6 +179,14 @@ namespace MCToCMZWorldConverter.Minecraft
 
                 int rx = int.Parse(match.Groups[1].Value);
                 int rz = int.Parse(match.Groups[2].Value);
+
+                long length = new FileInfo(file).Length;
+                if (length < RegionFileReader.HeaderBytes)
+                {
+                    _skippedRegionFiles.Add($"Skipped Minecraft region file with invalid Anvil header ({length} bytes): {file}");
+                    continue;
+                }
+
                 _regions[new RegionKey(rx, rz)] = new RegionFileInfo(file, rx, rz);
             }
         }

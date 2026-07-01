@@ -36,6 +36,11 @@ namespace MCToCMZWorldConverter.Minecraft
         private const int SectorBytes = 4096;
 
         /// <summary>
+        /// Minecraft Anvil region files begin with a two-sector header.
+        /// </summary>
+        internal const int HeaderBytes = SectorBytes * 2;
+
+        /// <summary>
         /// High bit on the compression byte indicating the chunk payload is stored externally.
         /// </summary>
         private const byte ExternalStreamFlag = 0x80;
@@ -79,11 +84,11 @@ namespace MCToCMZWorldConverter.Minecraft
             Path = path;
             RegionX = regionX;
             RegionZ = regionZ;
-            _stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-            if (_stream.Length < 8192)
+            if (new FileInfo(path).Length < HeaderBytes)
                 throw new InvalidDataException("Region file is too small: " + path);
 
+            _stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             ReadHeader();
         }
         #endregion
